@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="9623e3b6-4588-4949-a491-a5edbd54efb4" name="Server" url="http://ec2-54-206-111-155.ap-southeast-2.compute.amazonaws.com/">
+        <fileTransfer host="ec2-54-206-111-155.ap-southeast-2.compute.amazonaws.com" port="22" privateKey="$USER_HOME$/Downloads/iot-actual.pem" rootFolder="/mnt/farm-assist/www" accessType="SFTP" username="ubuntu" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
