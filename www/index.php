@@ -1,13 +1,17 @@
 <?php
 
-require_once 'config.php';
-$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+require_once 'DatabaseService.php';
 
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+$db = new DatabaseService();
+
+$result = $db->searchQuery("SELECT * FROM datasheet");
+
+if($result != null){
+    var_dump($result);
 }else{
-    echo("success");
+    echo "FAILED";
 }
-echo "Connected successfully";
+
+$db->closeDB();
 
 echo "Hello test deployment!";
