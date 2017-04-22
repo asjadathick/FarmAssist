@@ -1,3 +1,3 @@
 <?php
 
-echo "Cancer Works!";
+echo "Test deployment!";
