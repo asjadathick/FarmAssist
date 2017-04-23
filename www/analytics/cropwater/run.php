@@ -8,45 +8,56 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once "../../DatabaseService.php";
+require_once "../forecast.io.php";
 
 $cropwaterconfig = array(
     "name" => "cropwater",
-    "appid" => "f13a9e8d9727fd90e3c1f26f5cb29cb3",
-    "appurl"=> "api.openweathermap.org/data/2.5/forecast?" //full api url = api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}
+    "apikey" => "4194b3a620328a02715fa5d0015d07f0"
 );
 
 //db query
 $db = new DatabaseService();
 
-$result = $db->searchQuery("SELECT runtimestamp from analyticrunhistory WHERE analytic = 'crophealth' ORDER BY runtimestamp DESC LIMIT 1;");
+$result = $db->searchQuery("SELECT id,zoneid from cropcycle WHERE status = 'DEPLOYED'");
 
-$sensorData = array();
-$coordinates = array();
+while($cropcycles = $result->fetch_assoc()){    //for each crop cycle (main loop) run analytics for each crop cycle
 
-//get sensor data with humidity in it
-if($result != null){
-    $lastruntimestamp = $result->fetch_assoc();
-    $result = $db->searchQuery("SELECT id,zoneid from cropcycle WHERE status = 'DEPLOYED'");
+    $coordinates = "";
+    $cropcycle = $cropcycles['id'];
 
-    while($cropcycles = $result->fetch_assoc()){            //for each crop cycle
-        $cropcycle = $cropcycles['id'];
-        $qry = "SELECT * FROM sensordata WHERE timestamp >'" . $lastruntimestamp['runtimestamp'] . "' AND cropcycleid = '" . $cropcycle . "'";
-        $result = $db->searchQuery($qry);
-        while ($data = $result->fetch_assoc()){
-            $sensorData[] = $data;
-        }
+    //----------get the latest sensor data------------------
+    $sensorDataQry = "SELECT * FROM sensordata WHERE cropcycleid = '" . $cropcycle . "' ORDER BY id DESC LIMIT 1";
+    $sensorDataResult = $db->searchQuery($sensorDataQry);
 
-        $qry = "SELECT coordinates FROM zone WHERE id ='" . $cropcycles['zoneid'] . "'";
-        $result = $db->searchQuery($qry);
+    $sensorData = $sensorDataResult->fetch_object();
 
-        $coordinates[] = $result->fetch_assoc()['coordinates'];
+    //-----------get coordinates----------------
+    $coordinatesQry = "SELECT coordinates FROM zone WHERE id ='" . $cropcycles['zoneid'] . "'";
+    $coordinatesQryRsult = $db->searchQuery($coordinatesQry);
+
+    $coordinates = $coordinatesQryRsult->fetch_object()->coordinates;
+    $coordinatesSplit = explode(',',$coordinates);
+
+    //------------get weather data from weather api---------------
+    $forecast = new ForecastIO($cropwaterconfig['apikey']);
+
+//    $todayCondition = $forecast->getForecastToday($coordinatesSplit[0],$coordinatesSplit[1]);
+    $todayCondition = $forecast->getForecastToday('5.40','100.32');
+
+    echo count($todayCondition);
+
+    foreach($todayCondition as $cond){
+        echo $cond->getSummary() . ' ' . $cond->getApparentTemperature() . ' ';
+        echo $cond->getTime('d-m-y H:i:s') . ': ' . $cond->getPrecipitationProbability() . "\n";
     }
-}else{
-    echo "FAILED";
+
+    //-------------- analytics -----------------------------------
+
 }
 
 
-//get weather data from weather api
+
+//print_r($sensorData);
 
 
 
