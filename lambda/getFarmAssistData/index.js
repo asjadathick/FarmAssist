@@ -29,11 +29,52 @@ function getData(fromDate, toDate, deviceId) {
 
     return new Promise((resolve, reject) => {
 
+        let dataString = "";
+
         const req = https.request(options, (res) => {
 
             res.on("data", (d) => {
-                resolve(d.toString());
+                dataString += d.toString();
             });
+
+            res.on("end", () => {
+
+
+                let recentData = JSON.parse(dataString);
+                let dataList = [];
+
+                if (recentData.hasOwnProperty("values")) {
+
+                    recentData = recentData.values;
+
+                    for (let date in recentData) {
+                        if (recentData.hasOwnProperty(date)) {
+
+                            if (recentData.date.length == 5) {
+
+                                let splitData = recentData[date][0].max.split(",");
+
+                                dataList.push({
+                                    temperature: splitData[0],
+                                    pressure: splitData[1],
+                                    humidity: splitData[2],
+                                    moisture: splitData[3],
+                                    timestamp: date
+                                })
+
+                            }
+
+                        }
+                    }
+
+                }
+
+                if (dataString.length > 0) {
+                    return resolve(dataString);
+                } else {
+                    return reject("No Values");
+                }
+            })
 
         });
 
@@ -99,13 +140,14 @@ function storeNew({moisture, pressure, temperature, humidity, ph, timestamp}) {
 
 exports.handler = function (event, context) {
 
-    const deviceId = 25324;
+    const deviceId = 25453;
 
-    getLastRetrieved().then((data) => {
+    getLastRetrieved().then((date) => {
 
-        console.log(data);
+        let fromDate = new Date(date);
+        // fromDate.setMonth(fromDate.getMonth() - 12);
 
-        getData(new Date(data), new Date(), deviceId).then((data) => {
+        getData(fromDate, new Date(), deviceId).then((data) => {
 
             storeNew(data).then(() => {
                 console.log("Success");
