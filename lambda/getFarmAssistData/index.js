@@ -1,5 +1,3 @@
-exports = {};
-
 const https = require("https");
 const mysql = require("mysql");
 
@@ -13,9 +11,14 @@ const connection = mysql.createConnection({
 
 function getData(fromDate, toDate, deviceId) {
 
-	const url = "/measurement/measurements/series?source=" +
-		deviceId + "&dateFrom=" + fromDate.toISOString() +
-		"&dateTo=" + toDate.toISOString();
+    toDate.setTime(toDate.getTime() + (24 * 60 * 60 * 1000))
+    fromDate.setTime(fromDate.getTime() - (10 * 60 * 60 * 1000));
+
+    const url = "/measurement/measurements/series?source=" +
+        deviceId + "&dateFrom=" + fromDate.toISOString() +
+        "&dateTo=" + toDate.toISOString();
+
+    console.log(url)
 
     const options = {
         hostname: "tic2017team045.iot.telstra.com",
@@ -183,23 +186,23 @@ exports.handler = function (event, context) {
             storeNew(data).then(() => {
                 console.log("Success");
 
-                // context.succeed("Success");
+                context.succeed("Success: " + JSON.stringify(data));
 
             }).catch((e) => {
                 console.error("Error", e);
-                // context.succeed("Error" + e.toString);
+                context.succeed("Error: " + JSON.stringify(e));
             })
 
         }).catch((e) => {
             console.log(e);
-            // context.succeed("Error" + e.toString);
+            context.succeed("Error: " + JSON.stringify(e));
         });
 
     }).catch((e) => {
         console.log(e);
-        // context.succeed("Error" + e.toString);
+        context.succeed("Error: " + JSON.stringify(e));
     });
 
 };
 
-exports.handler();
+// exports.handler();
