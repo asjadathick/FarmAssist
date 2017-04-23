@@ -1,5 +1,3 @@
-exports = {};
-
 const https = require("https");
 const mysql = require("mysql");
 
@@ -13,9 +11,14 @@ const connection = mysql.createConnection({
 
 function getData(fromDate, toDate, deviceId) {
 
-	const url = "/measurement/measurements/series?source=" +
-		deviceId + "&dateFrom=" + fromDate.toISOString() +
-		"&dateTo=" + toDate.toISOString();
+    toDate.setTime(toDate.getTime() + (24 * 60 * 60 * 1000))
+    fromDate.setTime(fromDate.getTime() - (10 * 60 * 60 * 1000));
+
+    const url = "/measurement/measurements/series?source=" +
+        deviceId + "&dateFrom=" + fromDate.toISOString() +
+        "&dateTo=" + toDate.toISOString();
+
+    console.log(url)
 
     const options = {
         hostname: "tic2017team045.iot.telstra.com",
@@ -46,22 +49,47 @@ function getData(fromDate, toDate, deviceId) {
                 if (recentData.hasOwnProperty("values")) {
 
                     recentData = recentData.values;
+                    let newData = [];
 
                     for (let date in recentData) {
                         if (recentData.hasOwnProperty(date)) {
+                            console.log(recentData[date]);
+                            if (recentData[date].length == 4) {
 
-                            if (recentData.date.length == 5) {
+                                if (recentData[date][0]) {
+                                    newData[0] = recentData[date][0].max
+                                }
 
-                                let splitData = recentData[date][0].max.split(",");
+                                if (recentData[date][1]) {
+                                    newData[1] = recentData[date][1].max
+                                }
+
+                                if (recentData[date][2]) {
+                                    newData[2] = recentData[date][2].max
+                                }
+
+                                if (recentData[date][3]) {
+                                    newData[3] = recentData[date][3].max
+                                }
+
+
+                            }
+
+                            if ((newData[0] != undefined) &&
+                                (newData[1] != undefined) &&
+                                (newData[2] != undefined) &&
+                                (newData[3] != undefined)
+                            ) {
 
                                 dataList.push({
-                                    temperature: splitData[0],
-                                    pressure: splitData[1],
-                                    humidity: splitData[2],
-                                    moisture: splitData[3],
+                                    temperature: newData[0],
+                                    pressure: newData[1],
+                                    humidity: newData[2],
+                                    moisture: newData[3],
                                     timestamp: date
-                                })
+                                });
 
+                                newData = [];
                             }
 
                         }
@@ -69,8 +97,8 @@ function getData(fromDate, toDate, deviceId) {
 
                 }
 
-                if (dataString.length > 0) {
-                    return resolve(dataString);
+                if (dataList.length > 0) {
+                    return resolve(dataList);
                 } else {
                     return reject("No Values");
                 }
@@ -107,31 +135,38 @@ function getLastRetrieved() {
 
 }
 
-function storeNew({moisture, pressure, temperature, humidity, ph, timestamp}) {
+function storeNew(data) {
 
 
     return new Promise((resolve, reject) => {
 
         const query = "INSERT INTO sensordata (sensorid, cropcycleid, " +
             "moisture, pressure, temperature, humidity, ph, " +
-            "timestamp, message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?;";
+            "timestamp, message) VALUES ?;";
 
-        let values = [
-            1,
-            1,
-            moisture,
-            pressure,
-            temperature,
-            humidity,
-            ph,
-            timestamp
-        ];
+        let values = [];
 
-        connection.query(query, values, function (error, results) {
+        for (let i = 0; i < data.length; i++) {
+
+            values.push([
+                1,
+                1,
+                data[i].moisture,
+                data[i].pressure,
+                data[i].temperature,
+                data[i].humidity,
+                data[i].ph,
+                data[i].timestamp,
+                ""
+            ])
+
+        }
+
+        connection.query(query, [values], function (error, results) {
             if (error)
                 return reject(error);
 
-            return resolve(results[0].insertId);
+            return resolve(true);
         });
 
     });
@@ -140,35 +175,34 @@ function storeNew({moisture, pressure, temperature, humidity, ph, timestamp}) {
 
 exports.handler = function (event, context) {
 
-    const deviceId = 25453;
+    const deviceId = 25454;
 
     getLastRetrieved().then((date) => {
 
         let fromDate = new Date(date);
-        // fromDate.setMonth(fromDate.getMonth() - 12);
 
         getData(fromDate, new Date(), deviceId).then((data) => {
 
             storeNew(data).then(() => {
                 console.log("Success");
 
-                // context.succeed("Success");
+                context.succeed("Success: " + JSON.stringify(data));
 
             }).catch((e) => {
                 console.error("Error", e);
-                // context.succeed("Error" + e.toString);
+                context.succeed("Error: " + JSON.stringify(e));
             })
 
         }).catch((e) => {
             console.log(e);
-            // context.succeed("Error" + e.toString);
+            context.succeed("Error: " + JSON.stringify(e));
         });
 
     }).catch((e) => {
         console.log(e);
-        // context.succeed("Error" + e.toString);
+        context.succeed("Error: " + JSON.stringify(e));
     });
 
 };
 
-exports.handler();
+// exports.handler();
