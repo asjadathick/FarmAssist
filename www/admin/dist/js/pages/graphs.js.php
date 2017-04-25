@@ -48,6 +48,8 @@
     $wateringY = "[";
     $wateringX = "[";
 
+    $WATERcOMMENT;
+
     $result1 = $db->searchQuery("SELECT * FROM crophealthresults");
     if($result1 != null) {
         while($data = $result1->fetch_assoc()) {
@@ -56,12 +58,10 @@
         }
     }
 
-    // Todo: Update this
-    $result2 = $db->searchQuery("SELECT * FROM crophealthresults");
+    $result2 = $db->searchQuery("SELECT * FROM analytics.cropwaterresults WHERE cropcycleid = 1 ORDER BY timestamp ASC LIMIT 1;");
     if($result2 != null) {
         while($data = $result2->fetch_assoc()) {
-            $wateringY .= "'" . $data["timestamp"] . "',";
-            $wateringX .= $data["score"] . ",";
+            $WATERcOMMENT .= "<H1>" . $data["msg"] . "</H1><p>". $data["timestamp"] . "</p>";
         }
     }
 
