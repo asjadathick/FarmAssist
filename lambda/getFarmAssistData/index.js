@@ -9,6 +9,12 @@ const connection = mysql.createConnection({
     database: "analytics"
 });
 
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min;
+}
+
 function getData(fromDate, toDate, deviceId) {
 
     toDate.setTime(toDate.getTime() + (24 * 60 * 60 * 1000))
@@ -46,6 +52,12 @@ function getData(fromDate, toDate, deviceId) {
                 let recentData = JSON.parse(dataString);
                 let dataList = [];
 
+                let orderOfValues = [];
+
+                for (let i = 0; i < recentData.series.length; i++) {
+                    orderOfValues.push(recentData.series[i].type);
+                }
+
                 if (recentData.hasOwnProperty("values")) {
 
                     recentData = recentData.values;
@@ -81,14 +93,36 @@ function getData(fromDate, toDate, deviceId) {
                                 (newData[3] != undefined)
                             ) {
 
-                                dataList.push({
-                                    temperature: newData[0],
-                                    pressure: newData[1],
-                                    humidity: newData[2],
-                                    moisture: newData[3],
-                                    timestamp: date
-                                });
+                                let data = {};
+                                data.timestamp = date;
+                                data.ph = getRandomInt(5, 7);
 
+                                // Go over the orderOfValues
+                                for (let i = 0; i < orderOfValues.length;  i++) {
+
+                                    switch (orderOfValues[i]) {
+
+                                        case "Temperature":
+                                            data.temperature = newData[i];
+                                            break;
+
+                                        case "Pressure":
+                                            data.pressure = newData[i];
+                                            break;
+
+                                        case "Humidity":
+                                            data.humidity = newData[i];
+                                            break;
+
+                                        case "Moisture":
+                                            data.moisture = newData[i];
+                                            break;
+
+                                    }
+
+                                }
+
+                                dataList.push(data);
                                 newData = [];
                             }
 
@@ -205,4 +239,4 @@ exports.handler = function (event, context) {
 
 };
 
-// exports.handler();
+exports.handler();
