@@ -101,9 +101,10 @@ while($cropcycles = $result->fetch_assoc()){    //for each crop cycle (main loop
             $summaryMsg .= " It will be quite hot during ". $bestTime->format('H:i') . " so it is better to water at " . $lowestTime . " The temperature will be only " . $lowestTemp;
         }else{
 
-            $summaryMsg .= " It is fine to water the plan during  " . $bestTime->format('H:i');
+            $summaryMsg .= " It is fine to water the plant during  " . $bestTime->format('H:i');
         }
     }
+
     $qins;
     //----- analytics ------
     if($moistureSensor < $badMoistureArr[1] ){     //critical
