@@ -112,12 +112,11 @@ while($cropcycles = $result->fetch_assoc()){    //for each crop cycle (main loop
     }else{      //run analytics to suggest best time to water
         $qins = "INSERT INTO cropwaterresults VALUES (NULL, " . $summaryMsg .", NOW(), '". $cropcycle . "')";
     }
-        echo("insert db");
         $res = $db->searchQuery($qins);
 }
 
 
-//print_r($sensorData);
+echo("Analytics ran successfully!");
 
 
 
