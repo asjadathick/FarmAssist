@@ -1,3 +1,76 @@
+<?php
+
+$crophealthconfig = array(
+    "name" => "crophealth"
+);
+
+require_once "../DatabaseService.php";
+
+$db = new DatabaseService();
+
+$timeStampY = "[";
+
+$tempX = "[";
+$pressureX = "[";
+$humidityX = "[";
+$moistureX = "[";
+
+$result = $db->searchQuery("SELECT *, DATE_FORMAT(timestamp, '%Y-%m-%d-%HH') as 'day' FROM sensordata GROUP BY DATE_FORMAT(timestamp, '%Y-%m-%d-%HH');");
+
+if($result != null){
+
+    while($data = $result->fetch_assoc()){
+        $timeStampY .= "'" . $data["timestamp"] . "',";
+        $tempX .= $data["temperature"] . ",";
+        $pressureX .= $data["pressure"] . ",";
+        $humidityX .= $data["humidity"] . ",";
+        $moistureX .= $data["moisture"] . ",";
+    }
+
+    $tempX .= "]";
+    $pressureX .= "]";
+    $humidityX .= "]";
+    $moistureX .= "]";
+    $timeStampY .= "]";
+
+}else{
+    echo "FAILED";
+}
+
+
+$cropHealthY = "[";
+$cropHealthX = "[";
+
+$wateringY = "[";
+$wateringX = "[";
+
+$WATERcOMMENT;
+
+$result1 = $db->searchQuery("SELECT * FROM crophealthresults");
+if($result1 != null) {
+    while($data = $result1->fetch_assoc()) {
+        $cropHealthY .= "'" . $data["timestamp"] . "',";
+        $cropHealthX .= $data["score"] . ",";
+    }
+}
+
+$result2 = $db->searchQuery("SELECT * FROM analytics.cropwaterresults WHERE cropcycleid = 1 ORDER BY timestamp ASC LIMIT 1;");
+if($result2 != null) {
+    while($data = $result2->fetch_assoc()) {
+        $WATERcOMMENT .= "<H1>" . $data["msg"] . "</H1><p>". $data["timestamp"] . "</p>";
+    }
+}
+
+
+$cropHealthY .= "]";
+$cropHealthX .= "]";
+
+$wateringY .= "]";
+$wateringX .= "]";
+
+
+?>
+
 <!DOCTYPE html>
 <!--
 This is a starter template page. Use this page to start your new project from
@@ -129,7 +202,7 @@ desired effect
         <!-- Optionally, you can add icons to the links -->
         <li><a href="index.php"><i class="fa fa-link"></i> <span>Home</span></a></li>
         <li><a href="crop_health.html"><i class="fa fa-link"></i> <span>Crop health</span></a></li>
-        <li class="active"><a href="watering.html"><i class="fa fa-link"></i> <span>Watering</span></a></li>
+        <li class="active"><a href="watering.php"><i class="fa fa-link"></i> <span>Watering</span></a></li>
         <li class="treeview">
           <a href="#"><i class="fa fa-link"></i> <span>Sensor Data</span>
             <span class="pull-right-container">
@@ -153,7 +226,7 @@ desired effect
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-      <h1>Watering</h1>
+      <h1>Watering Information</h1>
     </section>
 
     <!-- Main content -->
@@ -172,7 +245,7 @@ desired effect
 
                   <div class="chart">
                     <!-- Sales Chart Canvas -->
-                    <canvas id="water" style="height: 180px;"></canvas>
+                    <?php echo $WATERcOMMENT ?>
                   </div>
                   <!-- /.chart-responsive -->
                 </div>
