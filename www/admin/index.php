@@ -1,3 +1,40 @@
+<?php
+
+    require_once "../DatabaseService.php";
+
+    $db = new DatabaseService();
+
+    $result = $db->searchQuery("SELECT * FROM analytics.zonenotice;");
+
+    $finalBoxes = "";
+
+    if($result != null){
+
+        while($data = $result->fetch_assoc()){
+            $finalBoxes .= $data["text"];
+        }
+
+    }else{
+        echo "FAILED";
+    }
+
+    $ROWCOUNT = "0";
+
+$result1 = $db->searchQuery("SELECT COUNT(*) FROM analytics.zonenotice;");
+
+if($result1 != null){
+
+    while($data = $result1->fetch_assoc()){
+        $ROWCOUNT = $data["COUNT(*)"];
+    }
+
+}else{
+    echo "FAILED";
+}
+
+
+?>
+
 <!DOCTYPE html>
 <!--
 This is a starter template page. Use this page to start your new project from
@@ -58,7 +95,7 @@ desired effect
   <header class="main-header">
 
     <!-- Logo -->
-    <a href="index2.html" class="logo">
+    <a href="index.php" class="logo">
       <!-- mini logo for sidebar mini 50x50 pixels -->
       <span class="logo-mini" style="font-weight: bold">FA</span>
       <!-- logo for regular state and mobile devices -->
@@ -79,7 +116,7 @@ desired effect
             <!-- Menu toggle button -->
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
               <i class="fa fa-bell-o"></i>
-              <span class="label label-warning">1</span>
+              <span class="label label-warning"><?php echo $ROWCOUNT ?></span>
             </a>
             <ul class="dropdown-menu">
               <li class="header">You have 1 recomendation</li>
@@ -94,7 +131,7 @@ desired effect
                   <!-- end notification -->
                 </ul>
               </li>
-              <li class="footer"><a href="index.html">View all</a></li>
+              <li class="footer"><a href="index.php">View all</a></li>
             </ul>
           </li>
           <!-- User Account Menu -->
@@ -184,19 +221,7 @@ desired effect
 
     <!-- Main content -->
     <section class="content">
-        <div class="row">
-          <div class="col-md-12">
-            <div class="box">
-              <div class="box-body">
-                <div class="row">
-                  <div class="col-md-8">
-                    <!--Get Message and insert the contents here-->
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <?php echo $finalBoxes ?>
     </section>
     <!-- /.content -->
   </div>
