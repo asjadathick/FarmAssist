@@ -42,11 +42,12 @@ void setup() {
         // Register device on IoT Platform
         Serial.println("############################ REGISTERING DEVICE #############################");
         char id[8];
-        const char* supportedMeasurements[4];
+        const char* supportedMeasurements[1];
         supportedMeasurements[0] = "Temperature";
         supportedMeasurements[1] = "Pressure";
         supportedMeasurements[2] = "Humidity";
         supportedMeasurements[3] = "Moisture";
+        //supportedMeasurements[0] = "All Values";
     
         int result = iotPlatform.registerDevice(DeviceName, id, 8, supportedMeasurements, 1);
     
