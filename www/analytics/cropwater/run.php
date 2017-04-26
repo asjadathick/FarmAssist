@@ -55,8 +55,8 @@ while($cropcycles = $result->fetch_assoc()){    //for each crop cycle (main loop
     //------------get weather data from weather api---------------
     $forecast = new ForecastIO($cropwaterconfig['apikey']);
 
-//    $todayCondition = $forecast->getForecastToday($coordinatesSplit[0],$coordinatesSplit[1]);
-    $todayCondition = $forecast->getForecastToday('5.40','100.32');
+    $todayCondition = $forecast->getForecastToday($coordinatesSplit[0],$coordinatesSplit[1]);
+  //  $todayCondition = $forecast->getForecastToday('5.40','100.32');
    // print_r($todayCondition);
 
     $lowestTime = $todayCondition[0]->getTime('H:i:s');
@@ -93,15 +93,14 @@ while($cropcycles = $result->fetch_assoc()){    //for each crop cycle (main loop
     }
 
     if($rainIndex == $lowestIndex){ //delay raining time
-        $summaryMsg .= " It will " . $lowestSummary ." during ". $bestTime->format('H:i') . " today. Check back on the moisture reading later after the rain stops.";
+        $summaryMsg = " It will " . $lowestSummary ." during ". $bestTime->format('H:i') . " today. Check back on the moisture reading later after the rain stops.";
 
     }else{
 
         if((double)$bestTimeTemperature > 30) {  //too hot during best time
-            $summaryMsg .= " It will be quite hot during ". $bestTime->format('H:i') . " so it is better to water at " . $lowestTime . " The temperature will be only " . $lowestTemp;
+            $summaryMsg = " It will be quite hot during ". $bestTime->format('H:i') . " so it is better to water at " . $lowestTime . " The temperature will be only " . $lowestTemp;
         }else{
-
-            $summaryMsg .= " It is fine to water the plant during  " . $bestTime->format('H:i');
+            $summaryMsg = " It is fine to water the plant during  " . $bestTime->format('H:i');
         }
     }
 
@@ -109,10 +108,8 @@ while($cropcycles = $result->fetch_assoc()){    //for each crop cycle (main loop
     //----- analytics ------
     if($moistureSensor < $badMoistureArr[1] ){     //critical
          $summaryMsg = "Water now. Your crop needs more moisture!";
-        $qins = "INSERT INTO cropwaterresults VALUES (NULL, '" . $summaryMsg ."', NOW(), ". $cropcycle . ")";
-    }else{      //run analytics to suggest best time to water
-        $qins = "INSERT INTO cropwaterresults VALUES (NULL, " . $summaryMsg .", NOW(), '". $cropcycle . "')";
     }
+        $qins = "INSERT INTO cropwaterresults VALUES (NULL, '" . $summaryMsg ."', NOW(), ". $cropcycle . ")";
         $res = $db->searchQuery($qins);
 }
 
