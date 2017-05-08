@@ -1,9 +1,10 @@
 <?php
 
-const DB_HOST = 'iot.csosz45qwa0w.ap-southeast-2.rds.amazonaws.com';
-const DB_USER = 'root';
-const DB_PASS = 'testavocado';
-const DB_NAME = 'analytics';
+//fake credentials
+const DB_HOST = 'xxx';
+const DB_USER = 'xxx';
+const DB_PASS = 'xxx';
+const DB_NAME = 'xxx';
 
 class DatabaseService{
 
